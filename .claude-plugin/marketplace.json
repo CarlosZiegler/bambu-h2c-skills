@@ -1,0 +1,13 @@
+{
+  "name": "bambu-h2c-skills",
+  "owner": {
+    "name": "Carlos Ziegler"
+  },
+  "plugins": [
+    {
+      "name": "bambu-h2c-skills",
+      "source": "./",
+      "description": "Blender → Bambu Studio → H2C: modelagem imprimível, fatiamento com qualidade e troubleshooting."
+    }
+  ]
+}
