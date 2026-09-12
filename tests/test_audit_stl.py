@@ -1,5 +1,7 @@
 import hashlib
+from contextlib import redirect_stderr
 import importlib.util
+import io
 import json
 from pathlib import Path
 import struct
@@ -7,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / 'skills/fdm-print-preflight/scripts/audit_stl.py'
@@ -230,6 +233,36 @@ class FileTests(unittest.TestCase):
                 reports = json.loads(r.stdout)['files']
                 self.assertEqual([p['status'] for p in reports], ['input_error', 'screen_pass'])
                 self.assertEqual(extreme.read_bytes(), before)
+
+    def test_report_path_replaced_by_symlink_during_audit_preserves_input(self):
+        source, out = self.folder / 'cube.stl', self.folder / 'report.json'
+        write_binary(source, self.cube)
+        before = source.read_bytes()
+        original_reader = audit.read_stl
+
+        def swap_output(path):
+            result = original_reader(path)
+            out.symlink_to(source)
+            return result
+
+        with patch.object(audit, 'read_stl', side_effect=swap_output):
+            self.assertEqual(audit.main([str(source), '--output', str(out)]), 0)
+        self.assertEqual(source.read_bytes(), before)
+        self.assertFalse(out.is_symlink())
+        self.assertEqual(json.loads(out.read_text())['files'][0]['status'], 'screen_pass')
+
+    def test_failed_report_replacement_keeps_previous_report_and_cleans_temp(self):
+        source, out = self.folder / 'cube.stl', self.folder / 'report.json'
+        write_binary(source, self.cube)
+        before = source.read_bytes()
+        out.write_text('previous report')
+        entries = set(self.folder.iterdir())
+        with patch('os.replace', side_effect=OSError('replacement failed')), redirect_stderr(io.StringIO()) as errors:
+            self.assertEqual(audit.main([str(source), '--output', str(out)]), 1)
+        self.assertIn('Cannot write report', errors.getvalue())
+        self.assertEqual(out.read_text(), 'previous report')
+        self.assertEqual(source.read_bytes(), before)
+        self.assertEqual(set(self.folder.iterdir()), entries)
 
 
 if __name__ == '__main__':

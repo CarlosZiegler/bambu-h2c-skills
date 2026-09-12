@@ -6,9 +6,11 @@ from collections import Counter, defaultdict
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
 import struct
 import sys
+import tempfile
 
 
 def read_stl(path):
@@ -202,6 +204,21 @@ def audit_triangles(triangles, unit_scale=1.0, bed_z=0.0, z_tolerance=0.001):
     return report
 
 
+def write_report(path, text):
+    # Replace the directory entry instead of following a late-created symlink.
+    # Keep the previous report intact if writing or replacement fails.
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=path.parent,
+                                         prefix=f'.{path.name}.', suffix='.tmp', delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(text)
+        os.replace(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('files', type=Path, nargs='+')
@@ -231,7 +248,7 @@ def main(argv=None):
     result = json.dumps({'schema_version': 1, 'files': reports}, indent=2, allow_nan=False)
     try:
         if args.output:
-            args.output.write_text(result + '\n', encoding='utf-8')
+            write_report(args.output, result + '\n')
         else:
             print(result)
     except OSError as exc:

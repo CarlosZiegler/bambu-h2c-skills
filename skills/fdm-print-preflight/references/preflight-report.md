@@ -8,7 +8,20 @@ Preencha com evidência, sem transformar campos vazios em aprovação. Guarde ju
 - Arquivo final reaberto (nome, versão e hash ou identificação equivalente):
 - Ferramentas/versões, perfil H2C, modo/bico/diâmetro, placa e processo:
 - Materiais e atribuição efetiva por filamento/bico:
+- Fabricante/variante, condição de secagem, alimentação e compatibilidade do par modelo/interface:
 - Plates, cor/material e quantidade de peças por plate:
+
+## Decisões de construção e processo
+
+- Uso, carga/direção, flexão, calor e acabamento relevantes:
+- Espessuras por função/região; reforços locais e orientação escolhida:
+- Relevos inferiores: quais têm função, quais foram simplificados e por quê:
+- Larguras de linha, perímetros, infill e espessuras sólidas em mm:
+- Altura fixa/variável, modo de suporte e compatibilidade com torre:
+- Folga projetada e compensações do slicer, sem duplicação não contabilizada:
+- Preset de referência, hipótese e parâmetros alterados:
+- Origem da recomendação (documentação/ensaio/relato) e versão/data:
+- Cupom representativo e critério de aceitação; resultado ou teste pendente:
 
 ## Geometria — uma linha por peça
 

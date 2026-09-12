@@ -23,6 +23,8 @@ Se a falha está concentrada numa base, pé, moldura, tubo, teto ou já se repet
 3. Confira overrides por objeto, blockers, suporte só na mesa e “don't support bridges”. Refaça o slice e veja o apoio **sob a face**, antes/no início/depois da transição.
 4. Se há uma plataforma grande sobre pés sem apoio, escolha reorientação, redesenho/divisão ou suporte removível. Brim não resolve impressão no ar. Veja o [caso de regressão da base com pés](../fdm-print-preflight/references/support-and-slice-review.md#caso-de-regressão-base-com-pés).
 
+Quando o relevo inferior for apenas decorativo e opcional, compare uma base plana ou pés separados antes de tentar aperfeiçoar o suporte. Não preencha encaixes ou cavidades funcionais. Para essa decisão, use [modelagem FDM](../blender-print-ready/references/design-for-fdm.md).
+
 Separe **fato encontrado** (“vão de 2 mm sem suporte no arquivo”) de **causa provável** (“compatível com o espaguete na base”). Foto isolada pode não mostrar se a peça se soltou primeiro.
 
 ## 3. Outras hipóteses e evidências
@@ -40,6 +42,8 @@ Separe **fato encontrado** (“vão de 2 mm sem suporte no arquivo”) de **caus
 | Hotend/AMS incompatível | Perfil versus rack/bico/material/slot reais | Corrigir mapeamento; nunca ignorar mismatch ou trocar o modelo de impressora para passar |
 
 Não use uma recomendação universal de cola, porta aberta, secagem ou temperatura: consulte o filamento e a placa específicos. Não desative detecção de espaguete para permitir a continuação de uma falha.
+
+Para suporte preso, interface que se solta, detalhes omitidos, colisões com infill ou problemas em camada variável, siga [ajustes por sintoma](../bambu-h2c-slice-print/references/support-and-process-tuning.md). Para fluxo, cooling, secagem e compatibilidade, leia [materiais/H2C](../bambu-h2c-slice-print/references/materials-and-h2c.md). Relatos comunitários geram hipóteses; confirme produto, versão e geometria antes de copiar parâmetros.
 
 ## 4. Aplicar e provar a correção
 

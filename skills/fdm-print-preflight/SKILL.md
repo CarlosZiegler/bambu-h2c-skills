@@ -11,6 +11,7 @@ Detecte peças que parecem apoiadas, mas começam regiões no ar. Este check com
 
 - Preserve fontes e projetos. Liste todas as peças e plates entregáveis; registre nome/ID, cor/material, quantidade, dimensões, orientação, montagem e perfil. Use o **arquivo exportado na orientação de impressão**, com a mesma escala e transformação do projeto final.
 - Não valide só o objeto ativo ou a imagem renderizada. Inspecione malha avaliada, espessuras, encaixes e detalhes. Reparos devem ocorrer em cópia; o diagnóstico não deve aplicar modifiers ou excluir faces.
+- Confirme a justificativa de construção: função/material, espessuras locais e direção de carga, com [modelagem FDM](../blender-print-ready/references/design-for-fdm.md) quando necessário. Para relevos opcionais que criam vãos, considere uma construção apoiada antes de aceitar o custo/risco de suporte.
 - Para STLs binários/ASCII, execute o helper Python 3 sem dependências externas:
 
 ```bash
@@ -34,6 +35,7 @@ O caminho `scripts/` é relativo à pasta desta skill. O helper assume **coorden
 
 1. Fatie cada plate novo/alterado com o perfil real. Confira os demais plates por comparação ao corrigir apenas um. Preserve agrupamento por cor quando solicitado.
 2. Revise primeira camada **e cada início de plataforma/ilha/ponte**, antes/no início/depois. Veja se existe apoio exatamente onde precisa, com interface e separação coerentes. Suporte em outro objeto ou região não vale como evidência.
+   Confira também fechamento sobre infill, espessuras sólidas em mm, detalhes XY e restrições de suporte/torre se houver camada variável. Resolva incompatibilidades com os [ajustes de processo](../bambu-h2c-slice-print/references/support-and-process-tuning.md).
 3. Resolva avisos; não aprove por “sem warning”, `return_code=0`, malha manifold ou presença de algum suporte no G-code. Considere também erros de parsing/configuração.
 4. Salve o 3MF de projeto versionado, reabra o arquivo que será entregue e confirme quantidades, orientação, filamentos e ajustes efetivos por objeto. Novo slice após qualquer edição; não reutilize G-code antigo. Se só entregar STL, declare que suportes e perfis não estão incluídos.
 5. Registre evidência e pendências no [modelo de relatório](references/preflight-report.md). Marque **não verificado** quando uma ferramenta/perfil/check faltar, sem inventar sucesso. Pode entregar um rascunho com limites claros; não o chame de pronto para impressão.

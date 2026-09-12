@@ -1,6 +1,6 @@
 {
   "name": "bambu-h2c-skills",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Modelagem Blender, preflight de apoio/camadas, fatiamento H2C e diagnóstico de impressão FDM para agentes Codex e Claude.",
   "author": {
     "name": "Carlos Ziegler"

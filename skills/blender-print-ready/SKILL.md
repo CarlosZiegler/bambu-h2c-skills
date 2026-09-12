@@ -7,12 +7,15 @@ description: Use when creating, adjusting or exporting Blender models for FDM pr
 
 Entregue a forma solicitada com dimensões, montagem e orientação de impressão verificáveis. **Manifold não significa imprimível; exportado não significa fatiado ou testado fisicamente.**
 
+Ao definir uma peça nova ou rever sua construção, leia [decisões de projeto FDM](references/design-for-fdm.md): função/material antes da espessura, orientação da carga, fundo apoiado, resolução e cupons. Evite acrescentar rebaixos inferiores puramente ornamentais que criem plataformas suspensas. Preserve os necessários à função/aparência; compare reorientação, divisão e suporte quando o vão for necessário.
+
 ## 1. Preservar e identificar
 
 - Descubra as ferramentas disponíveis; nomes de MCP, operadores e extensões variam. Se Blender/MCP estiver indisponível, use arquivos locais ou execução local disponível e informe o limite, sem inventar conexão.
 - Salve uma cópia do `.blend` antes de mudanças em massa. Faça diagnósticos sem aplicar modifiers, recalcular normais, remover faces, preencher furos ou mover objetos na cena original. Reparos são uma etapa separada, em cópia, com comparação antes/depois.
 - Liste **todas as peças entregáveis**, incluindo letras, tubos, flanges, pés e molduras. Não verifique somente `active_object`. Separe peças reais de cutters, câmeras e referências.
 - Registre ID/nome, cor/material, quantidade, dimensões alvo, face de impressão, plate, montagem (cola/encaixe/parafuso), folgas e regiões críticas. Peças da mesma cor no mesmo plate quando couberem e isso for solicitado; se não couberem, use plates adicionais da mesma cor.
+- Defina uso, carga/direção, flexão e calor esperados sem inventar requisitos. Justifique espessura por região: carcaça decorativa, fixação e presilha não pedem a mesma construção. Reforce localmente quando apropriado, verificando orientação e seção real; não use 100% de infill como substituto do desenho.
 
 ## 2. Unidades e montagem
 
@@ -58,8 +61,9 @@ bpy.ops.wm.stl_export(
 ```
 
 - Reimporte o arquivo ou leia suas dimensões; compare quantidade, geometria e unidades com o manifesto. Um 3MF de geometria não equivale a um projeto Bambu com suportes, filamentos e plates configurados.
-- Antes de chamar a entrega de pronta para fatiar/imprimir, execute [fdm-print-preflight](../fdm-print-preflight/SKILL.md) e a conferência do projeto no [Bambu Studio](../bambu-h2c-slice-print/SKILL.md). Se essas skills não estiverem instaladas, abra os caminhos relativos neste repositório; se os recursos necessários não existirem, registre a validação pendente.
-- Entregue versões separadas do `.blend`, STLs, 3MF de projeto e relatório. Informe o que foi modelado, verificado digitalmente, fatiado e efetivamente testado em uma impressão.
+- Confirme o modo de avaliação da exportação (viewport/render), visibilidade e níveis de modifiers. Um STL pode diferir da malha visualizada; consulte versão do exportador/extensão e reimporte a entrega.
+- Para uma entrega apenas de modelo/STL, execute a etapa de geometria do [fdm-print-preflight](../fdm-print-preflight/SKILL.md) e registre os limites; validação geométrica permite encaminhar ao fatiamento, não aprovar a impressão. Quando a entrega incluir fatiamento/projeto de impressão, faça também a conferência no [Bambu Studio](../bambu-h2c-slice-print/SKILL.md). Se essas skills não estiverem instaladas, abra os caminhos relativos neste repositório; se faltarem recursos necessários à etapa solicitada, registre a validação pendente.
+- Entregue os formatos solicitados, preservando a fonte editável disponível e um registro das verificações. `.blend`, STLs e 3MF de projeto têm funções diferentes; não exija todos numa entrega simples de geometria. Informe o que foi modelado, verificado digitalmente, fatiado e efetivamente testado em uma impressão.
 
 ## Fontes
 

@@ -59,6 +59,18 @@ Os testes geram modelos pequenos: base fechada sobre quatro pés, vão de 0,25 m
 
 A revisão que motivou as mudanças está em [docs/review-2026-09-12.md](docs/review-2026-09-12.md).
 
+## Conhecimento de modelagem e ajustes — versão 1.2
+
+As quatro skills também incluem guias consultados conforme a decisão, sem carregar toda a pesquisa em cada tarefa:
+
+| Guia | O que orienta |
+|---|---|
+| [Projeto para FDM](skills/blender-print-ready/references/design-for-fdm.md) | Evitar vãos ornamentais desnecessários; preservar rebaixos funcionais; espessuras por função, reforço localizado, orientação, detalhes e folgas |
+| [Material e H2C](skills/bambu-h2c-slice-print/references/materials-and-h2c.md) | Produto exato, hardware/AMS, placa, secagem, propriedades e distinção entre fluxo, dinâmica e limite volumétrico |
+| [Suportes e processo](skills/bambu-h2c-slice-print/references/support-and-process-tuning.md) | Tipo/cobertura/remoção, interface, camadas variáveis, paredes, infill e ajustes guiados pelo defeito |
+
+Pesquisa e limites: [Blender/modelagem](docs/research-modeling-2026-09-12.md), [Bambu/H2C/materiais](docs/research-h2c-materials-2026-09-12.md) e [relatos/experimentos da comunidade](docs/research-community-2026-09-12.md). Documentação do fabricante, ensaio publicado e relato individual têm pesos diferentes. Os exemplos não são um perfil universal “anti-espaguete”; cupons e ajustes ficam registrados com as condições em que foram verificados.
+
 ## Limites e operação
 
 - Use perfil, firmware, bico, material e placa reais. Limites de máquina e valores de suporte não são universais; confira documentação oficial/perfil instalado.
