@@ -1,44 +1,56 @@
 ---
 name: bambu-print-troubleshoot
-description: Use when a Bambu Lab H2C print fails, shows an HMS code, or has quality defects — adhesion, warping, stringing, spaghetti, clogs, layer shifts, elephant foot, purge/color bleed, dimensional errors — to diagnose and fix one variable at a time.
+description: Use when a Bambu H2C print fails, spaghetti or floating-cantilever warnings appear, an HMS code is reported, or a printed part has adhesion, extrusion, dimensional or support defects.
 ---
 
-# Diagnóstico de falhas — Bambu Lab H2C
+# Diagnosticar antes de mudar parâmetros
 
-Método: **1) coletar evidência** (status MCP, código HMS, foto da câmera, filamento/placa/perfil/processo usados, em que altura falhou) → **2) classificar** (adesão · extrusão/material · geometria/suporte · mecânica · configuração dual/Vortek) → **3) aplicar UMA correção por vez** → **4) reimprimir um teste pequeno** (mesma região do problema) antes da peça inteira → **5) registrar** parâmetro, valor antigo → novo. Nunca mude cinco coisas de uma vez; nunca cancele um print sem confirmação do usuário (pausar é permitido).
+Fluxo: **evidência → objeto/camada → hipótese testável → correção mínima → novo slice → validação**. Siga a autorização da sessão para operar a máquina; pedir diagnóstico ou corrigir um arquivo não autoriza iniciar, retomar ou cancelar um print. Pausa preventiva cabe em operação/monitoramento já autorizado. Não repita pedidos de autorização já concedida.
 
-## Códigos HMS
-Formato 4 blocos: módulo–parte–nível–ID. Nível 0001 erro (para), 0002 aviso, 0003 info. **Sempre** consultar o código exato em https://wiki.bambulab.com/en/hms/home antes de agir. Detecção por IA na série H2 (https://wiki.bambulab.com/en/h2/manual/intelligent-detection):
-- 0300-8003 espaguete (nozzle cam) · 0C00-803F acúmulo no bico · 0C00-8040 extrusão em ar / sem extrusão
-- 0500-806E objeto estranho na placa · 0C00-0300-0002-000C tipo/posição da placa · 0500-8053 hotend ≠ perfil
-- 0C00-0300-0002-000x inspeção de 1ª camada (ex.: -0005 timeout)
+## 1. Localizar a falha real
 
-## Sintoma → causa provável → correção (em ordem de probabilidade)
-- **Não adere / descola / warping**: placa suja ou tipo errado no slicer; mesa fria; base pequena; correntes de ar; contração (ABS/ASA/PC). → Lavar placa (detergente + água morna, não IPA); conferir placa no slicer; +5–10 °C mesa; brim Auto/Painted; chanfro nas arestas; porta fechada + câmara para ABS/ASA; **cola** se PEI lisa + PETG; Cool Plate/SuperTack para PLA difícil.
-- **Espaguete** (0300-8003): adesão falhou, suporte caiu, peça tombou, colisão do bico. → Corrigir adesão; suportes Tree Hybrid/Strong com base maior ou Normal Grid; brim; reorientar para mais base; reduzir velocidade em peças altas; manter detecção ligada.
-- **Stringing / bolinhas / superfície áspera / estalos / bolhas**: filamento **úmido** (causa nº 1); temperatura alta; retração. → Secar (PLA 55 °C 8 h, PETG 70, ABS/ASA 75–85, TPU 65–75); rodar Flow Dynamics; −5 °C; retraction test (0,2–0,4 mm limpa a torre); TPU um objeto por plate, sem AMS.
-- **Elephant foot / 1ª camada esmagada**: compensação 0; mesa quente demais. → Elephant foot compensation 0,10–0,20 mm (calibrar com cubo 25×25×10), −5–10 °C na 1ª camada, chanfro 45° na base.
-- **Layer shift**: colisão com peça/suporte/warping levantado, placa mal encaixada, velocidade alta em peça alta, sujeira nos trilhos. → Placa encaixada até o fim; Z-hop Auto/Slope; reduzir outer wall/travel em peças altas; checar detritos e correias; evitar arestas que levantam.
-- **Entupimento / underextrusion / extrusão em ar** (0C00-8040): PLA com câmara quente/porta fechada; filamento de suporte com temp incompatível; filamento úmido; hotend errado no rack; max volumetric speed alto demais em preset genérico. → Porta aberta para PLA; suporte compatível (Support for PLA vs PETG); secar; conferir hotend ID; calibrar Max Flowrate (−5–10 %); cold pull / trocar hotend Vortek.
-- **Paredes finas ausentes / gaps entre paredes**: modelo < 2 perímetros; Arachne mal interpretando; flow baixo. → Redesenhar ≥ 0,9 mm (blender-print-ready); testar Classic wall generator; Flow Rate fine.
-- **Furos/dimensões erradas**: sem Precise wall; sem hole compensation; flow alto; contração. → Precise wall ON; wall order outer/inner; XY hole/contour compensation (+0,1–0,2); calibrar Flow Rate; shrinkage no perfil do filamento.
-- **Topo com buracos/pillowing**: poucas top shells sobre infill esparso. → Top shells ≥ 5; infill 20 %+ ou gradiente; ironing só se plano.
-- **Seam feio / zits**: posição automática ruim; seam gap; PA errado. → Seam pintado; Aligned/Back; scarf seam em cascas curvas; rodar Flow Dynamics.
-- **Overhang caído / superfície suportada ruim / pontes cedendo**: > 45° sem suporte; top Z distance errado; bridge flow/speed. → Suporte (0,2 mm mesmo filamento; **0 mm com filamento de interface no outro bico**); reorientar; ↓ overhang speed; ↑ bridge flow, ↓ bridge speed; mais cooling em PLA.
-- **Purga excessiva / manchas de cor / cor suja**: trocas dentro do mesmo bico; flush baixo escuro→claro; prime tower off. → Grouping *Filament-saving*; uma cor/suporte por bico; prime tower ON + flush into support/infill/object; ↑ flush volume escuro→claro; purge mode H2C.
-- **Hotend mismatch (0500-8053) / posição Vortek**: perfil diz 0,4 mas a posição tem 0,6. → Corrigir config do rack no perfil ou trocar o hotend; nunca ignorar.
-- **Falha na inspeção de 1ª camada**: ver a foto; normalmente adesão, nivelamento, bico sujo, placa errada. → Limpar placa e bico; bed leveling ON; conferir placa; repetir.
-- **Fatiamento estranho (infill faltando, paredes duplas, "redundant paths")**: cascas sobrepostas/faces internas do Blender. → Voltar ao modelo (Boolean Union, deletar faces internas) ou Mesh Boolean no Studio; Fix model como último recurso.
-- **Peça fraca / quebra em camadas**: orientação errada, poucas walls, filamento úmido, temp baixa. → Reorientar carga no XY; 3–4 walls; secar; +5–10 °C; câmara fechada para ABS/ASA.
-- **Timelapse/LAN print não inicia**: sem pendrive na H2 / LAN mode sem access code. → Inserir pendrive; conferir IP e access code; Developer Mode para MCP.
+- Reúna o arquivo **que foi impresso**, plate e peça, material/preset, placa, versão/perfis, altura/camada/tempo e código HMS completo. Leia arquivos/fotos disponíveis antes de pedir informações repetidas.
+- Distinga **foto real**, liveview, render e a imagem genérica “Example Photo” de um alerta. Um recorte do layout identifica uma peça, mas não mostra sua aderência durante a impressão.
+- Leia o código completo na [wiki HMS](https://wiki.bambulab.com/en/hms/home), considerando modelo e firmware. Prefixo/código parcial não identifica sozinho a causa. Se a fonte não estiver disponível, explique o que foi inferido do texto do alerta e da evidência, sem inventar tradução de código.
+- “Spaghetti” descreve filamento solto. Pode resultar de desprendimento, suporte quebrado, colisão **ou uma superfície que começa no ar**. Não conclua automaticamente “filamento úmido” ou “mesa suja”.
 
-## Rotina do agente ao detectar erro
-1. `get_printer_status` + `camera_snapshot` (MCP) → registrar código HMS, altura/camada, tempo decorrido.
-2. Erro nível 0001 ou espaguete visível: **pausar** (`pause_print`) e reportar ao usuário com foto e diagnóstico provável; cancelar só com confirmação. Avisos 0002: reportar e seguir monitorando.
-3. Buscar o código na wiki HMS; propor a correção mais provável desta tabela + teste pequeno de validação (cubo, torre, ou recorte da região problemática via Cut no Studio).
-4. Após a correção, aplicar no perfil/modelo, salvar preset com nome novo e registrar o que mudou. Se dois prints seguidos falharem pelo mesmo motivo, parar e revisar o modelo (skill blender-print-ready) antes de mexer mais no slicer.
+## 2. Primeiro descarte geometria sem apoio
 
-## Referências
-- HMS: https://wiki.bambulab.com/en/hms/home · Intro HMS: https://wiki.bambulab.com/en/x1/troubleshooting/intro-hms · Detecção H2: https://wiki.bambulab.com/en/h2/manual/intelligent-detection
-- Placas: https://wiki.bambulab.com/en/filament-acc/acc/plates · PEI texturizada: https://wiki.bambulab.com/en/general/textured-PEI-plate-not-working-as-expected · Secagem: https://wiki.bambulab.com/en/filament-acc/filament/dry-filament · Tabela de materiais: https://wiki.bambulab.com/en/general/filament-guide-material-table
-- Elephant foot: https://wiki.bambulab.com/en/software/bambu-studio/parameter/elephant-foot · Bridging: https://wiki.bambulab.com/en/filament-acc/filament/print-quality/bridging · Purga: https://wiki.bambulab.com/en/software/bambu-studio/reduce-wasting-during-filament-change · Contração: https://wiki.bambulab.com/en/knowledge-sharing/3d-prints-shrinkage · Calibrações: https://wiki.bambulab.com/en/bambu-studio/Calibration
+Se a falha está concentrada numa base, pé, moldura, tubo, teto ou já se repetiu no mesmo local, inspecione o modelo **agora**, antes de recomendar outra impressão:
+
+1. Identifique a peça na orientação efetiva do plate. Meça contato com a mesa e superfícies inferiores elevadas, usando [fdm-print-preflight](../fdm-print-preflight/SKILL.md).
+2. Encontre a altura onde começou a região problemática e compare com a foto/relato. `Z mínimo = 0`, “Lay on Face”, uma casca manifold e ausência de warning não eliminam esse risco.
+3. Confira overrides por objeto, blockers, suporte só na mesa e “don't support bridges”. Refaça o slice e veja o apoio **sob a face**, antes/no início/depois da transição.
+4. Se há uma plataforma grande sobre pés sem apoio, escolha reorientação, redesenho/divisão ou suporte removível. Brim não resolve impressão no ar. Veja o [caso de regressão da base com pés](../fdm-print-preflight/references/support-and-slice-review.md#caso-de-regressão-base-com-pés).
+
+Separe **fato encontrado** (“vão de 2 mm sem suporte no arquivo”) de **causa provável** (“compatível com o espaguete na base”). Foto isolada pode não mostrar se a peça se soltou primeiro.
+
+## 3. Outras hipóteses e evidências
+
+| Sintoma | O que distinguir antes de ajustar | Correção orientada pela evidência |
+|---|---|---|
+| Desprendimento/warping | Peça deslocou? canto levantou? contato real pequeno? placa/perfil corretos? | Limpeza conforme fabricante, nivelamento, brim/orelhas ou orientação; temperatura/ambiente apenas se necessário |
+| Stringing/estalos/bolhas | Umidade, vazamento, retração, temperatura ou extrusão sem apoio | Secagem conforme produto/equipamento; teste de temperatura/retração se justificado, não todos juntos |
+| Falta de extrusão | Caminho do filamento, hotend/nozzle correto, entupimento, limite volumétrico | Inspeção/calibração apropriada; não encobrir com aumento indiscriminado de flow |
+| Ponte/overhang caído | Vão e ancoragem, suporte/interface, direção e trajetória da ponte | Reorientar, apoiar ou testar bridge speed/flow/cooling. Não prescrever sempre aumentar bridge flow |
+| Parede/letra ausente | Trajetória já falta no preview ou falha só na peça real? | Geometria/largura de linha se falta no slice; fluxo/adesão se a trajetória existe |
+| Furo/encaixe errado | Medida projetada, importada e impressa; seam, orientação, contração | Cupom e compensação definida como radial/diametral; não ativar opções de precisão sem diagnóstico |
+| Layer shift | Colisão, canto/suporte levantado, placa solta, mecânica | Resolver o obstáculo ou mecânica; velocidade só se a evidência indicar |
+| Topo aberto/peça fraca | Espessura de topo, infill, paredes, orientação da carga, material | Ajuste estrutural localizado, confirmado no preview e em teste adequado |
+| Hotend/AMS incompatível | Perfil versus rack/bico/material/slot reais | Corrigir mapeamento; nunca ignorar mismatch ou trocar o modelo de impressora para passar |
+
+Não use uma recomendação universal de cola, porta aberta, secagem ou temperatura: consulte o filamento e a placa específicos. Não desative detecção de espaguete para permitir a continuação de uma falha.
+
+## 4. Aplicar e provar a correção
+
+- Preserve original e configuração atual; salve nova versão. Faça a menor mudança coerente com a hipótese. Uma estratégia de suporte pode exigir vários parâmetros relacionados: registre-os como uma correção, em vez de mudar também temperatura, velocidade e fluxo sem evidência.
+- Reavalie **todas as peças afetadas** e os parâmetros efetivos. Siga [bambu-h2c-slice-print](../bambu-h2c-slice-print/SKILL.md) para revisar as camadas críticas e reabrir a entrega. Não reimprima o mesmo arquivo que falhou esperando que o novo projeto tenha efeito nele.
+- Quando necessário, proponha um teste que preserve vão, pés, orientação, material e suporte da região defeituosa. Um cubo genérico, ou um recorte que encurta a ponte, não valida uma base suspensa. Não inicie o teste sem autorização de impressão.
+- Se a causa continuar incerta, peça a informação discriminante (por exemplo, se a peça se soltou antes ou depois de o material embolar) enquanto conclui a inspeção independente possível. Não mude várias causas candidatas ao mesmo tempo.
+- Registre peça/plate, evidência, hipótese, antes→depois, arquivo final, slice, localização do suporte e resultado físico. “Corrigido no arquivo”, “fatiamento conferido” e “impressão física passou” são estados diferentes.
+
+## Fontes
+
+- [Bambu: HMS](https://wiki.bambulab.com/en/hms/home), [detecção H2](https://wiki.bambulab.com/en/h2/manual/intelligent-detection).
+- [Suporte no Studio](https://wiki.bambulab.com/en/software/bambu-studio/support), [bridging](https://wiki.bambulab.com/en/filament-acc/filament/print-quality/bridging).
+- [Placas](https://wiki.bambulab.com/en/filament-acc/acc/plates), [secagem](https://wiki.bambulab.com/en/filament-acc/filament/dry-filament).
