@@ -44,7 +44,7 @@ python3 skills/fdm-print-preflight/scripts/audit_stl.py pecas/*.stl \
 - Analisa todos os STLs informados, na orientação de impressão e assumindo coordenadas em mm; `--unit-scale` e `--bed-z` permitem convenção explícita diferente.
 - Não modifica STLs. Detecta bordas abertas, winding inconsistente, cascas/volumes problemáticos, falta de contato plano e faces inferiores elevadas, inclusive plataformas sobre pés.
 - Saída `0`: triagem sem achados, ainda requer revisão do slice. `2`: geometria bloqueada ou apoio precisa de revisão. `1`: entrada/leitura inválida. Consulte o JSON para o motivo.
-- É uma triagem conservadora: chanfros/curvas autoportantes também podem pedir revisão. Não mede espessura, auto-interseção, estabilidade, resistência ou capacidade de ponte. Não lê transformações/configurações de 3MF nem comprova que o suporte foi gerado no lugar correto.
+- É uma triagem conservadora: chanfros/curvas autoportantes também podem pedir revisão. Não mede espessura, auto-interseção, contenção exata de cascas, estabilidade, resistência ou capacidade de ponte. Não lê transformações/configurações de 3MF nem comprova que o suporte foi gerado no lugar correto.
 
 O [guia de suporte](skills/fdm-print-preflight/references/support-and-slice-review.md) explica como fechar achados com evidência do slicer. O [modelo de relatório](skills/fdm-print-preflight/references/preflight-report.md) registra decisões, arquivos e checks pendentes.
 

@@ -12,6 +12,8 @@ Uma face inclinada cujo máximo Z supera a mesa também gera revisão, mesmo se 
 
 ## Como fechar um achado
 
+Uma cavidade fechada legítima tem uma casca interna com volume orientado negativo. O helper sinaliza para revisão quando os limites dessa casca cabem nos de uma casca positiva; isso é apenas uma candidata a cavidade, não uma prova de contenção. Confira a geometria e o slice antes de inverter normais ou preencher vazios. O helper não calcula o aninhamento exato entre cascas.
+
 Registre peça, região, altura, material/perfil e decisão:
 
 - **Reorientação:** maior apoio, face aceitável e dimensões preservadas; valide todas as novas superfícies inferiores após girar.

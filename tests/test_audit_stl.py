@@ -104,6 +104,22 @@ class GeometryTests(unittest.TestCase):
             with self.subTest(extra=extra):
                 self.assertEqual(audit.audit_triangles(self.cube + [extra])['status'], 'blocked')
 
+    def test_enclosed_void_is_reviewed_not_declared_invalid(self):
+        cells = {(x, y, z) for x in range(3) for y in range(3) for z in range(3)}
+        cells.remove((1, 1, 1))
+        r = audit.audit_triangles(voxel_surface(cells))
+        self.assertEqual(r['nonmanifold_edges'], 0)
+        self.assertEqual(r['inconsistent_winding_edges'], 0)
+        self.assertEqual(sorted(s['signed_volume_mm3'] for s in r['shells']), [-1, 27])
+        self.assertEqual(r['status'], 'review_required')
+        self.assertIn('negative_shell_verify_cavity_or_winding', r['review_findings'])
+        self.assertIn('exact_shell_nesting', r['not_checked'])
+
+    def test_wholly_inverted_object_is_blocked(self):
+        r = audit.audit_triangles([tuple(reversed(t)) for t in self.cube])
+        self.assertEqual(r['status'], 'blocked')
+        self.assertIn('nonpositive_shell_volume', r['blocking_findings'])
+
     def test_above_and_below_bed(self):
         high = audit.audit_triangles(transform(self.cube, offset=(0, 0, 0.25)))
         low = audit.audit_triangles(transform(self.cube, offset=(0, 0, -0.25)))
@@ -195,6 +211,25 @@ class FileTests(unittest.TestCase):
             r = subprocess.run([sys.executable, str(SCRIPT), str(path), '--output', str(dest)], capture_output=True)
             self.assertNotEqual(r.returncode, 0)
             self.assertEqual(path.read_bytes(), before)
+
+    def test_extreme_coordinates_do_not_discard_other_file_reports(self):
+        good, extreme = self.folder / 'cube.stl', self.folder / 'extreme.stl'
+        write_binary(good, self.cube)
+        for scale in (1e104, 1e200):
+            text = 'solid extreme\n'
+            for tri in transform(self.cube, scale=(scale,) * 3):
+                text += 'facet normal 0 0 0\nouter loop\n'
+                text += ''.join('vertex %s %s %s\n' % p for p in tri)
+                text += 'endloop\nendfacet\n'
+            extreme.write_text(text + 'endsolid extreme\n')
+            before = extreme.read_bytes()
+            with self.subTest(scale=scale):
+                r = subprocess.run([sys.executable, str(SCRIPT), str(extreme), str(good)], capture_output=True)
+                self.assertEqual(r.returncode, 1)
+                self.assertEqual(r.stderr, b'')
+                reports = json.loads(r.stdout)['files']
+                self.assertEqual([p['status'] for p in reports], ['input_error', 'screen_pass'])
+                self.assertEqual(extreme.read_bytes(), before)
 
 
 if __name__ == '__main__':

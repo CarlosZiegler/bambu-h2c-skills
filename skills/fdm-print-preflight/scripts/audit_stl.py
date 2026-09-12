@@ -62,6 +62,17 @@ def dot(a, b):
     return sum(x*y for x, y in zip(a, b))
 
 
+def require_finite_measurements(value):
+    if isinstance(value, dict):
+        for child in value.values():
+            require_finite_measurements(child)
+    elif isinstance(value, (list, tuple)):
+        for child in value:
+            require_finite_measurements(child)
+    elif isinstance(value, float) and not math.isfinite(value):
+        raise ValueError('Derived measurement is not finite; check coordinates and unit scale')
+
+
 def audit_triangles(triangles, unit_scale=1.0, bed_z=0.0, z_tolerance=0.001):
     if not math.isfinite(unit_scale) or unit_scale <= 0:
         raise ValueError('unit_scale must be positive and finite')
@@ -91,7 +102,8 @@ def audit_triangles(triangles, unit_scale=1.0, bed_z=0.0, z_tolerance=0.001):
     for i, tri in enumerate(triangles):
         a, b, c = tri
         normal = cross(subtract(b, a), subtract(c, a))
-        norm = math.sqrt(dot(normal, normal))
+        norm = math.hypot(*normal)
+        require_finite_measurements(norm)
         if norm <= 1e-12:
             degenerate += 1
             continue
@@ -123,9 +135,26 @@ def audit_triangles(triangles, unit_scale=1.0, bed_z=0.0, z_tolerance=0.001):
         reference = triangles[ids[0]][0]
         volume = math.fsum(dot(subtract(a, reference), cross(subtract(b, reference), subtract(c, reference))) / 6
                            for i in ids for a, b, c in [triangles[i]])
-        zs = [p[2] for i in ids for p in triangles[i]]
+        vertices = [p for i in ids for p in triangles[i]]
+        shell_low = tuple(min(p[axis] for p in vertices) for axis in range(3))
+        shell_high = tuple(max(p[axis] for p in vertices) for axis in range(3))
         shell_report.append({'triangles': len(ids), 'signed_volume_mm3': volume,
-                             'z_min_mm': min(zs), 'z_max_mm': max(zs)})
+                             'z_min_mm': shell_low[2], 'z_max_mm': shell_high[2],
+                             'bounds_mm': {'min': shell_low, 'max': shell_high}})
+    possible_cavities, bad_volumes = [], []
+    for shell in shell_report:
+        if shell['signed_volume_mm3'] > 0:
+            continue
+        # A closed cavity has a negative boundary shell. Bounding boxes only
+        # identify candidates, never prove nesting or authorize a mesh repair.
+        enclosed_candidate = shell['signed_volume_mm3'] < 0 and any(
+            outer['signed_volume_mm3'] > 0 and all(
+                outer['bounds_mm']['min'][axis] <= shell['bounds_mm']['min'][axis]
+                and shell['bounds_mm']['max'][axis] <= outer['bounds_mm']['max'][axis]
+                for axis in range(3)
+            ) for outer in shell_report
+        )
+        (possible_cavities if enclosed_candidate else bad_volumes).append(shell)
     nonmanifold = sum(len(uses) != 2 for uses in edges.values())
     winding = sum(len(uses) == 2 and sum(sign for _, sign in uses) != 0 for uses in edges.values())
     duplicates = sum(count - 1 for count in duplicate_faces.values())
@@ -136,7 +165,7 @@ def audit_triangles(triangles, unit_scale=1.0, bed_z=0.0, z_tolerance=0.001):
         blocking.append('inconsistent_winding')
     if duplicates or degenerate:
         blocking.append('duplicate_or_degenerate_faces')
-    if any(s['signed_volume_mm3'] <= 0 for s in shell_report):
+    if bad_volumes:
         blocking.append('nonpositive_shell_volume')
     if low[2] < bed_z - z_tolerance:
         blocking.append('geometry_below_bed')
@@ -147,9 +176,11 @@ def audit_triangles(triangles, unit_scale=1.0, bed_z=0.0, z_tolerance=0.001):
         review.append('no_planar_bed_contact')
     if len(shell_report) > 1:
         review.append('multiple_shells_check_each')
+    if possible_cavities:
+        review.append('negative_shell_verify_cavity_or_winding')
     if downward_area > 0:
         review.append('elevated_downward_faces_check_support_or_bridge')
-    return {
+    report = {
         'status': 'blocked' if blocking else 'review_required' if review else 'screen_pass',
         'blocking_findings': blocking, 'review_findings': review,
         'dimensions_mm': [high[i] - low[i] for i in range(3)],
@@ -163,10 +194,12 @@ def audit_triangles(triangles, unit_scale=1.0, bed_z=0.0, z_tolerance=0.001):
         'convention': {'unit_scale_to_mm': unit_scale, 'bed_z_mm': bed_z,
                        'z_tolerance_mm': z_tolerance, 'topology_vertices': 'exact coordinates; no welding'},
         'slice_review': 'required', 'physical_print': 'not_verified',
-        'not_checked': ['self_intersection', 'vertex_manifoldness', 'wall_thickness',
+        'not_checked': ['self_intersection', 'vertex_manifoldness', 'exact_shell_nesting', 'wall_thickness',
                         'bridge_anchoring_or_capacity', 'stability_or_adhesion',
                         'strength', 'inter_object_collisions', 'slicer_support_coverage'],
     }
+    require_finite_measurements(report)
+    return report
 
 
 def main(argv=None):
@@ -192,7 +225,7 @@ def main(argv=None):
             reports.append({'file': str(path), 'sha256': digest, **report})
             if report['status'] != 'screen_pass' and code != 1:
                 code = 2
-        except (OSError, ValueError, struct.error) as exc:
+        except (OSError, ValueError, ArithmeticError, struct.error) as exc:
             reports.append({'file': str(path), 'status': 'input_error', 'error': str(exc)})
             code = 1
     result = json.dumps({'schema_version': 1, 'files': reports}, indent=2, allow_nan=False)

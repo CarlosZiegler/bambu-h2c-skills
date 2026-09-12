@@ -21,7 +21,7 @@ O caminho `scripts/` é relativo à pasta desta skill. O helper assume **coorden
 
 - Saídas: `0` = triagem sem achados, **ainda requer revisão de slice**; `2` = geometria bloqueada ou apoio precisa de revisão; `1` = erro de leitura/entrada. O JSON distingue `blocked`, `review_required` e `screen_pass`. O programa não corrige nem sobrescreve STLs.
 - O relatório inclui dimensões, topologia por aresta, cascas e volume por casca, contato plano com a mesa, faces voltadas para baixo e seus intervalos de altura. Faces horizontais agrupadas por altura ajudam a achar plataformas suspensas; a soma de áreas não é uma medição de aderência.
-- **Limites:** não testa auto-interseção, espessura, normais por vértice, resistência, ponte ancorada, estabilidade, colisão entre objetos ou suporte efetivo. Faces inclinadas/curvas e tetos internos podem gerar achados legítimos para revisão. “Suporte planejado” não fecha o achado até conferir o slice.
+- **Limites:** não testa auto-interseção, espessura, manifold por vértice, contenção exata de cascas, resistência, ponte ancorada, estabilidade, colisão entre objetos ou suporte efetivo. Faces inclinadas/curvas e tetos internos podem gerar achados legítimos para revisão. Uma casca negativa potencialmente interna exige conferir cavidade/orientação antes de reparar. “Suporte planejado” não fecha o achado até conferir o slice.
 
 ## 2. Resolver cada região que começa sem apoio
 
