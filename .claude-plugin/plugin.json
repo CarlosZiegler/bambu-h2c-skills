@@ -1,10 +1,18 @@
 {
   "name": "bambu-h2c-skills",
-  "version": "1.0.0",
-  "description": "Skills para agentes Claude: modelagem imprimível no Blender, operação do Bambu Studio na Bambu Lab H2C e diagnóstico de falhas de impressão FDM.",
+  "version": "1.2.0",
+  "description": "Modelagem Blender, preflight de apoio/camadas, fatiamento H2C e diagnóstico de impressão FDM para agentes Codex e Claude.",
   "author": {
     "name": "Carlos Ziegler"
   },
-  "keywords": ["bambu-lab", "h2c", "blender", "3d-printing", "fdm", "bambu-studio", "skills"],
+  "keywords": [
+    "bambu-lab",
+    "h2c",
+    "blender",
+    "3d-printing",
+    "fdm",
+    "bambu-studio",
+    "skills"
+  ],
   "skills": "./skills"
 }
